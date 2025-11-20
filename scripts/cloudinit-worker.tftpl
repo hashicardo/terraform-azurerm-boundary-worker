@@ -1,0 +1,136 @@
+#!/bin/bash
+set -eou pipefail
+
+# Necessary variables passed from Terraform
+# hcp_boundary_cluster_id
+# worker_uid             
+# worker_activation_token
+# worker_type            
+# region                 
+# boundary_version       
+# vm_ip_address
+# lz_name
+
+# NOTE: this is intended to run in Ubuntu / Debian.
+
+LOGFILE="/var/log/cloud-init-worker.log"
+
+function log {
+  local level="$1"
+  local message="$2"
+  local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local log_entry="$timestamp [$level] - $message"
+
+  echo "$log_entry" | sudo tee -a "$LOGFILE"
+}
+
+# This runs when ANY command fails
+function on_error {
+  local exit_code=$?
+  local line_no=$1
+  log "ERROR" "Script failed with exit code $exit_code at line $line_no"
+}
+
+trap 'on_error $LINENO' ERR
+
+log "INFO" "Beginning custom_data script."
+
+log "INFO" "Installing required packages"
+wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install boundary-enterprise=${boundary_version}+ent-1
+
+# Directories and permissions
+log "INFO" "Creating Boundary directories and setting permissions"
+sudo mkdir -p /home/boundary/worker1
+sudo chown boundary:boundary /home/boundary && sudo chown boundary:boundary /home/boundary/worker1
+sudo chown boundary:boundary /usr/bin/boundary
+
+# Create Boundary worker configuration file
+log "INFO" "Creating Boundary worker configuration file + permissions"
+sudo tee /etc/boundary.d/worker.hcl > /dev/null <<'CONFIG'
+
+# HCP Boundary Worker Configuration File
+
+hcp_boundary_cluster_id = "${hcp_boundary_cluster_id}"
+
+listener "tcp" {
+    purpose = "proxy"
+    address = "0.0.0.0:9202"
+}
+
+worker {
+    auth_storage_path                            = "/boundary/boundary-worker-${worker_uid}"
+    controller_generated_activation_token        = "${worker_activation_token}"
+    # recording_storage_path                       = "/boundary/storage/"
+    # recording_storage_minimum_available_capacity = "100MB"
+    public_addr                                  = "${vm_ip_address}"
+    tags {
+        "type"    = ["${worker_type}"]
+        "cloud"   = ["azure"]
+        "region"  = ["${region}"]
+        "lz_name" = ["${lz_name}"]
+    }
+}
+
+events {
+    observations_enabled = false
+    sysevents_enabled = true
+    telemetry_enabled = false
+    sink "stderr" {
+        name = "all-events"
+        description = "All events sent to stderr"
+        event_types = ["*"]
+        format = "hclog-text"
+    }
+    sink {
+        name = "obs-sink"
+        description = "Observations sent to a file"
+        event_types = ["observation"]
+        format = "cloudevents-json"
+        file {
+            path = "/var/log/boundary"
+            file_name = "events.ndjson"
+        }
+    }
+}
+CONFIG
+
+sudo chmod 0644 /etc/boundary.d/worker.hcl
+sudo chown boundary:boundary /etc/boundary.d/worker.hcl
+
+# Unit file for Boundary service
+log "INFO" "Setting up Boundary service"
+sudo tee /lib/systemd/system/boundary.service > /dev/null <<'EOF'
+# This is the Unit file for a Boundary WORKER.
+
+[Unit]
+Description="HashiCorp Boundary - Identity-based access management for dynamic infrastructure"
+Documentation=https://www.boundaryproject.io/docs
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+EnvironmentFile=-/etc/boundary.d/boundary.env
+ProtectSystem=full
+ProtectHome=read-only
+ExecStart=/usr/bin/boundary server -config=/etc/boundary.d/worker.hcl
+ExecReload=/bin/kill --signal HUP $MAINPID
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start the service
+log "INFO" "Enabling and starting Boundary service"
+sudo systemctl daemon-reload
+sudo systemctl enable boundary
+sudo systemctl start boundary
+
+log "INFO" "Custom_data script completed successfully."

@@ -1,0 +1,64 @@
+# Example Terraform Variables Configuration
+# Copy this file to terraform.tfvars and customize with your values
+
+# Region where resources will be deployed
+region = "westeurope"
+
+# Resource Group Name
+resource_group_name = "demo2-rg"
+
+# Virtual Network Configuration
+vnet_name          = "demo2-vnet"
+vnet_address_space = ["10.0.0.0/16"]
+
+# Subnet Configuration
+public_subnet_name   = "public-subnet"
+public_subnet_prefix = ["10.0.1.0/24"]
+
+private_subnet_name   = "private-subnet"
+private_subnet_prefix = ["10.0.2.0/24"]
+
+# VM Configuration
+vm_size        = "Standard_D2s_v5" # 2 vCPUs, 8GB RAM, up to 12.5 Gbps network
+admin_username = "azureadmin"
+
+# REQUIRED: Your SSH public key for VM access
+# Generate with: ssh-keygen -t rsa -b 4096
+# Then copy the content of ~/.ssh/id_rsa.pub
+admin_ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... your-ssh-public-key-here"
+
+# VM Names
+public_vm_name   = "public-vm"
+private_vm_names = ["private-vm-1", "private-vm-2"]
+
+# Common Tags (applied to all resources)
+common_tags = {
+  Environment = "Development"
+  Project     = "Demo2"
+  ManagedBy   = "Terraform"
+  Owner       = "YourName"
+  CostCenter  = "Engineering"
+}
+
+# Public VM Tags (additional tags for public VM)
+public_vm_tags = {
+  Tier = "Public"
+  Role = "Gateway"
+}
+
+# Private VM Tags (additional tags for private VMs)
+private_vm_tags = {
+  Tier = "Private"
+  Role = "Worker"
+}
+
+# HCP Boundary Configuration
+boundary_public_url = "https://11111111-2222-3333-4444-555555555555.boundary.hashicorp.cloud/"
+boundary_username   = "your-boundary-username"
+boundary_password   = "your-boundary-password"
+
+# Authentication in Azure requires the following environment variables to be set:
+# export ARM_CLIENT_ID= \
+# export ARM_CLIENT_SECRET= \
+# export ARM_SUBSCRIPTION_ID= \
+# export ARM_TENANT_ID=
