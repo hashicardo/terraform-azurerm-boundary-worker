@@ -14,11 +14,6 @@ output "public_vm_private_ip" {
   value       = azurerm_linux_virtual_machine.public.private_ip_address
 }
 
-output "public_nsg_id" {
-  description = "ID of the public Network Security Group"
-  value       = azurerm_network_security_group.public.id
-}
-
 output "ssh_key" {
   description = "SSH private key for admin purposes."
   sensitive   = true

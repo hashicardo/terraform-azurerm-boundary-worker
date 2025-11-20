@@ -10,21 +10,24 @@ This will satisfy the condition that basically any client can access it from the
 - **Azure Linux VM** (Ubuntu 22.04 LTS) with Boundary Enterprise worker installed
 - **Public IP address** (Static) for external client access
 - **Network Interface** with both public and private IP configurations
-- **Network Security Group** with rules for:
-  - Inbound: SSH (22), Boundary proxy (9202, 9203)
-  - Outbound: Boundary controller (9201), internet access
+- **Network Interface Security Group Association** (associates with existing NSG)
 - **HCP Boundary Worker** registration with controller-generated activation token
 - **SSH Key Pair** (TLS-generated) for VM access
 
 ## Public Network Requirements
-- This module creates a security group to allow inbound connections on ports 9202 and 9203 as well as outbound on 9201 for connecting to the controller and for updates and internet connection in general.
-- (WIP) This security group should also allow connection to Vault for credential retrieval (credential injection).
+
+- **Existing Network Security Group**: This module requires a pre-existing NSG with rules for:
+  - Inbound: SSH (22), Boundary proxy (9202, 9203)
+  - Outbound: Boundary controller (9201), internet access
+  - (WIP) Connection to Vault for credential retrieval (credential injection)
+- The module associates the VM's network interface with the existing NSG but does not create or manage the NSG itself
 
 ## Prerequisites
 
 - Existing Azure Resource Group
 - Existing Virtual Network (VNet)
 - Existing Public Subnet
+- **Existing Network Security Group** configured with appropriate rules for Boundary worker
 - HCP Boundary cluster with admin credentials
 - Azure authentication credentials set via environment variables:
   ```bash
@@ -72,6 +75,7 @@ The worker is configured with the following properties:
 | `resource_group_name` | Name of the existing resource group | string | - | yes |
 | `vnet_name` | Name of the existing VNet | string | - | yes |
 | `public_subnet_name` | Name of the existing public subnet | string | - | yes |
+| `public_nsg_name` | Name of the existing public network security group | string | - | yes |
 | `lz_name` | Landing zone identifier for worker tags | string | - | yes |
 | `boundary_public_url` | Public URL of the Boundary Controller | string | - | yes |
 | `boundary_username` | Username for Boundary admin authentication | string | - | yes |
@@ -90,14 +94,13 @@ The worker is configured with the following properties:
 | `public_vm_name` | Name of the public VM |
 | `public_vm_public_ip` | Public IP address of the public VM |
 | `public_vm_private_ip` | Private IP address of the public VM |
-| `public_nsg_id` | ID of the public Network Security Group |
 | `ssh_key` | SSH private key for admin purposes (sensitive) |
 
 ## Files
 
 - `boundary-worker.tf` - HCP Boundary worker resource and cloudinit configuration
-- `public-vm.tf` - Azure VM, network interface, and public IP resources
-- `networking-data.tf` - Data sources for existing network resources and NSG configuration
+- `public-vm.tf` - Azure VM, network interface, public IP, and NSG association resources
+- `networking-data.tf` - Data sources for existing network resources (VNet, subnet, NSG, resource group)
 - `variables.tf` - Input variable definitions
 - `outputs.tf` - Output value definitions
 - `terraform.tf` - Provider version requirements

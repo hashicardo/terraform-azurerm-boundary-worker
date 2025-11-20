@@ -2,7 +2,7 @@
 
 # Public IP for Public VM
 resource "azurerm_public_ip" "public_vm" {
-  name                = "${var.public_vm_name}-pip"
+  name                = "${var.public_vm_name}-pip-${random_string.worker_id.id}"
   location            = data.azurerm_resource_group.existing_rg.location
   resource_group_name = data.azurerm_resource_group.existing_rg.name
   allocation_method   = "Static"
@@ -12,7 +12,7 @@ resource "azurerm_public_ip" "public_vm" {
 
 # Network Interface for Public VM
 resource "azurerm_network_interface" "public_vm" {
-  name                = "${var.public_vm_name}-nic"
+  name                = "${var.public_vm_name}-nic-${random_string.worker_id.id}"
   location            = data.azurerm_resource_group.existing_rg.location
   resource_group_name = data.azurerm_resource_group.existing_rg.name
   tags                = merge(var.common_tags, var.public_vm_tags)
@@ -28,12 +28,12 @@ resource "azurerm_network_interface" "public_vm" {
 # Associate Network Interface with Public NSG
 resource "azurerm_network_interface_security_group_association" "public_vm" {
   network_interface_id      = azurerm_network_interface.public_vm.id
-  network_security_group_id = azurerm_network_security_group.public.id
+  network_security_group_id = data.azurerm_network_security_group.existing_nsg.id
 }
 
 # Public VM
 resource "azurerm_linux_virtual_machine" "public" {
-  name                = var.public_vm_name
+  name                = "${var.public_vm_name}-${random_string.worker_id.id}"
   location            = data.azurerm_resource_group.existing_rg.location
   resource_group_name = data.azurerm_resource_group.existing_rg.name
   size                = var.vm_size

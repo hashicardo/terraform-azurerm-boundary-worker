@@ -20,6 +20,11 @@ variable "public_subnet_name" {
   type        = string
 }
 
+variable "public_nsg_name" {
+  description = "Name of the existing public network security group."
+  type        = string
+}
+
 variable "vm_size" {
   description = "Size of the Virtual Machines (2 CPUs, 8GB RAM, 10GB/s network)"
   type        = string
