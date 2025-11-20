@@ -22,11 +22,6 @@ private_subnet_prefix = ["10.0.2.0/24"]
 vm_size        = "Standard_D2s_v5" # 2 vCPUs, 8GB RAM, up to 12.5 Gbps network
 admin_username = "azureadmin"
 
-# REQUIRED: Your SSH public key for VM access
-# Generate with: ssh-keygen -t rsa -b 4096
-# Then copy the content of ~/.ssh/id_rsa.pub
-admin_ssh_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... your-ssh-public-key-here"
-
 # VM Names
 public_vm_name   = "public-vm"
 private_vm_names = ["private-vm-1", "private-vm-2"]
