@@ -37,18 +37,32 @@ This will satisfy the condition that basically any client can access it from the
   export ARM_TENANT_ID=<your-tenant-id>
   ```
 
-## Usage
+## Example Usage
 
 1. Copy the example variables file:
    ```bash
    cp terraform.tfvars.example terraform.tfvars
    ```
 
-2. Edit `terraform.tfvars` with your values:
-   - Azure region and resource identifiers
-   - HCP Boundary cluster URL and credentials
-   - VM configuration (size, admin username)
-   - Landing zone name for worker tagging
+2. Add the required configuration and instantiate the module like this:
+```hcl
+module "azure_worker_ingress" {
+  source              = "git::https://github.com/hashicardo/terraform-azurerm-boundary-ingress-worker/tree/main"
+  count               = 3
+  region              = var.region
+  boundary_public_url = var.boundary_public_url
+  boundary_username   = var.boundary_username
+  boundary_password   = var.boundary_password
+  boundary_version    = var.boundary_version
+  lz_name             = var.lz_name
+  admin_username      = var.admin_username
+
+  vnet_name           = azurerm_virtual_network.main.name
+  public_subnet_name  = azurerm_subnet.public.name
+  resource_group_name = azurerm_resource_group.main.name
+  public_nsg_name     = azurerm_network_security_group.public.name
+}
+```
 
 3. Initialize and apply:
    ```bash
