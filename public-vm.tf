@@ -2,7 +2,8 @@
 
 # Public IP for Public VM
 resource "azurerm_public_ip" "public_vm" {
-  name                = "${var.public_vm_name}-pip-${random_string.worker_id.id}"
+  count               = var.number_of_workers
+  name                = "${var.public_vm_name}-pip-${random_string.worker_id.id}-${count.index}"
   location            = data.azurerm_resource_group.existing_rg.location
   resource_group_name = data.azurerm_resource_group.existing_rg.name
   allocation_method   = "Static"
@@ -12,7 +13,8 @@ resource "azurerm_public_ip" "public_vm" {
 
 # Network Interface for Public VM
 resource "azurerm_network_interface" "public_vm" {
-  name                = "${var.public_vm_name}-nic-${random_string.worker_id.id}"
+  count               = var.number_of_workers
+  name                = "${var.public_vm_name}-nic-${random_string.worker_id.id}-${count.index}"
   location            = data.azurerm_resource_group.existing_rg.location
   resource_group_name = data.azurerm_resource_group.existing_rg.name
   tags                = merge(var.common_tags, var.public_vm_tags)
@@ -21,19 +23,21 @@ resource "azurerm_network_interface" "public_vm" {
     name                          = "internal"
     subnet_id                     = data.azurerm_subnet.existing_public.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.public_vm.id
+    public_ip_address_id          = azurerm_public_ip.public_vm[count.index].id
   }
 }
 
 # Associate Network Interface with Public NSG
 resource "azurerm_network_interface_security_group_association" "public_vm" {
-  network_interface_id      = azurerm_network_interface.public_vm.id
+  count                     = var.number_of_workers
+  network_interface_id      = azurerm_network_interface.public_vm[count.index].id
   network_security_group_id = data.azurerm_network_security_group.existing_nsg.id
 }
 
 # Public VM
 resource "azurerm_linux_virtual_machine" "public" {
-  name                = "${var.public_vm_name}-${random_string.worker_id.id}"
+  count               = var.number_of_workers
+  name                = "${var.public_vm_name}-${random_string.worker_id.id}-${count.index}"
   location            = data.azurerm_resource_group.existing_rg.location
   resource_group_name = data.azurerm_resource_group.existing_rg.name
   size                = var.vm_size
@@ -44,7 +48,7 @@ resource "azurerm_linux_virtual_machine" "public" {
   custom_data = data.cloudinit_config.boundary_worker.rendered
 
   network_interface_ids = [
-    azurerm_network_interface.public_vm.id,
+    azurerm_network_interface.public_vm[count.index].id,
   ]
 
   admin_ssh_key {
@@ -68,12 +72,12 @@ resource "azurerm_linux_virtual_machine" "public" {
   disable_password_authentication = true
 
   lifecycle {
-    replace_triggered_by = [ boundary_worker.hcp_pki_worker ]
+    replace_triggered_by = [boundary_worker.hcp_pki_worker]
   }
 
   depends_on = [
     azurerm_network_interface_security_group_association.public_vm, # to destroy correctly
-    boundary_worker.hcp_pki_worker # This is critical to ensure the worker will have the auth token.
+    boundary_worker.hcp_pki_worker                                  # This is critical to ensure the worker will have the auth token.
   ]
 }
 

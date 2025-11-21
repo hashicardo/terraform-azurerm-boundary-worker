@@ -1,17 +1,17 @@
 # Output Values
-output "public_vm_name" {
+output "public_vm_names" {
   description = "Name of the public VM"
-  value       = azurerm_linux_virtual_machine.public.name
+  value       = [for vm in azurerm_linux_virtual_machine.public : vm.name]
 }
 
-output "public_vm_public_ip" {
+output "public_vm_public_ips" {
   description = "Public IP address of the public VM"
-  value       = azurerm_public_ip.public_vm.ip_address
+  value       = [for ip in azurerm_public_ip.public_vm : ip.ip_address]
 }
 
-output "public_vm_private_ip" {
+output "public_vm_private_ips" {
   description = "Private IP address of the public VM"
-  value       = azurerm_linux_virtual_machine.public.private_ip_address
+  value       = [for vm in azurerm_linux_virtual_machine.public : vm.private_ip_address]
 }
 
 output "ssh_key" {

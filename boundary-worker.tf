@@ -30,7 +30,7 @@ data "cloudinit_config" "boundary_worker" {
 
 # Random ID for worker:
 resource "random_string" "worker_id" {
-  length  = 6
+  length  = 4
   special = false
   upper   = false
   lifecycle {
@@ -39,7 +39,8 @@ resource "random_string" "worker_id" {
 }
 
 resource "boundary_worker" "hcp_pki_worker" {
-  name                        = "azure-worker-${random_string.worker_id.id}"
+  count                       = var.number_of_workers
+  name                        = "azure-worker-${random_string.worker_id.id}-iw${count.index}"
   worker_generated_auth_token = ""
   lifecycle {
     ignore_changes = [scope_id]

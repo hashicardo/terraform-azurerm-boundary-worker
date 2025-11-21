@@ -5,6 +5,24 @@ variable "region" {
   type        = string
 }
 
+variable "lz_name" {
+  description = "Name of the landing zone. Identifier for worker tags. This corresponds to the LZ assigned to this worker."
+  type        = string
+}
+
+variable "common_tags" {
+  description = "Common tags to apply to all resources"
+  type        = map(string)
+  default = {
+    Environment = "Demo"
+    Project     = "Boundary-demo-2"
+    ManagedBy   = "Terraform"
+  }
+}
+
+######################
+#     NETWORKING     #
+######################
 variable "resource_group_name" {
   description = "Name of the existing resource group."
   type        = string
@@ -25,6 +43,9 @@ variable "public_nsg_name" {
   type        = string
 }
 
+######################
+#         VM         #
+######################
 variable "vm_size" {
   description = "Size of the Virtual Machines (2 CPUs, 8GB RAM, 10GB/s network)"
   type        = string
@@ -39,17 +60,7 @@ variable "admin_username" {
 variable "public_vm_name" {
   description = "Name of the public VM"
   type        = string
-  default     = "public-vm"
-}
-
-variable "common_tags" {
-  description = "Common tags to apply to all resources"
-  type        = map(string)
-  default = {
-    Environment = "Demo"
-    Project     = "Boundary-demo-2"
-    ManagedBy   = "Terraform"
-  }
+  default     = "vm-pub"
 }
 
 variable "public_vm_tags" {
@@ -61,11 +72,15 @@ variable "public_vm_tags" {
   }
 }
 
-variable "lz_name" {
-  description = "Name of the landing zone. Identifier for worker tags. This corresponds to the LZ assigned to this worker."
-  type        = string
+variable "number_of_workers" {
+  description = "Number of Ingress workers to deploy on this network."
+  type        = number
+  default     = 1
 }
 
+######################
+#      BOUNDARY      #
+######################
 variable "boundary_public_url" {
   description = "Public URL of the Boundary Controller."
   type        = string
