@@ -12,8 +12,8 @@ vnet_name          = "demo2-vnet"
 vnet_address_space = ["10.0.0.0/16"]
 
 # Subnet Configuration
-public_subnet_name   = "public-subnet"
-public_subnet_prefix = ["10.0.1.0/24"]
+subnet_name   = "public-subnet"
+subnet_prefix = ["10.0.1.0/24"]
 
 private_subnet_name   = "private-subnet"
 private_subnet_prefix = ["10.0.2.0/24"]
@@ -23,7 +23,7 @@ vm_size        = "Standard_D2s_v5" # 2 vCPUs, 8GB RAM, up to 12.5 Gbps network
 admin_username = "azureadmin"
 
 # VM Names
-public_vm_name   = "public-vm"
+vm_name   = "public-vm"
 private_vm_names = ["private-vm-1", "private-vm-2"]
 
 # Common Tags (applied to all resources)
@@ -36,7 +36,7 @@ common_tags = {
 }
 
 # Public VM Tags (additional tags for public VM)
-public_vm_tags = {
+vm_tags = {
   Tier = "Public"
   Role = "Gateway"
 }
@@ -48,9 +48,9 @@ private_vm_tags = {
 }
 
 # HCP Boundary Configuration
-boundary_public_url = "https://11111111-2222-3333-4444-555555555555.boundary.hashicorp.cloud/"
-boundary_username   = "your-boundary-username"
-boundary_password   = "your-boundary-password"
+boundary_addr     = "https://11111111-2222-3333-4444-555555555555.boundary.hashicorp.cloud/"
+boundary_username = "your-boundary-username"
+boundary_password = "your-boundary-password"
 
 # Authentication in Azure requires the following environment variables to be set:
 # export ARM_CLIENT_ID= \

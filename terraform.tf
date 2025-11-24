@@ -35,10 +35,3 @@ terraform {
 #   auth_method_login_name = var.boundary_username
 #   auth_method_password   = var.boundary_password
 # }
-
-# # Resource Group
-# resource "azurerm_resource_group" "main" {
-#   name     = var.resource_group_name
-#   location = var.region
-#   tags     = var.common_tags
-# }

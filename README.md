@@ -58,9 +58,9 @@ module "azure_worker_ingress" {
   admin_username      = var.admin_username
 
   vnet_name           = azurerm_virtual_network.main.name
-  public_subnet_name  = azurerm_subnet.public.name
+  subnet_name  = azurerm_subnet.public.name
   resource_group_name = azurerm_resource_group.main.name
-  public_nsg_name     = azurerm_network_security_group.public.name
+  nsg_name     = azurerm_network_security_group.public.name
 }
 ```
 
@@ -88,26 +88,26 @@ The worker is configured with the following properties:
 | `region` | Azure region where resources will be deployed | string | - | yes |
 | `resource_group_name` | Name of the existing resource group | string | - | yes |
 | `vnet_name` | Name of the existing VNet | string | - | yes |
-| `public_subnet_name` | Name of the existing public subnet | string | - | yes |
-| `public_nsg_name` | Name of the existing public network security group | string | - | yes |
+| `subnet_name` | Name of the existing public subnet | string | - | yes |
+| `nsg_name` | Name of the existing public network security group | string | - | yes |
 | `lz_name` | Landing zone identifier for worker tags | string | - | yes |
 | `boundary_public_url` | Public URL of the Boundary Controller | string | - | yes |
 | `boundary_username` | Username for Boundary admin authentication | string | - | yes |
 | `boundary_password` | Password for Boundary admin authentication | string | - | yes |
 | `vm_size` | Size of the Virtual Machine | string | `"Standard_D2s_v5"` | no |
 | `admin_username` | Administrator username for the VM | string | - | yes |
-| `public_vm_name` | Name of the public VM | string | `"public-vm"` | no |
+| `vm_name` | Name of the public VM | string | `"public-vm"` | no |
 | `boundary_version` | Version of Boundary Enterprise binary | string | `"0.20.0"` | no |
 | `common_tags` | Common tags to apply to all resources | map(string) | See variables.tf | no |
-| `public_vm_tags` | Additional tags for public VM | map(string) | See variables.tf | no |
+| `vm_tags` | Additional tags for public VM | map(string) | See variables.tf | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| `public_vm_name` | Name of the public VM |
-| `public_vm_public_ip` | Public IP address of the public VM |
-| `public_vm_private_ip` | Private IP address of the public VM |
+| `vm_name` | Name of the public VM |
+| `vm_public_ip` | Public IP address of the public VM |
+| `vm_private_ip` | Private IP address of the public VM |
 | `ssh_key` | SSH private key for admin purposes (sensitive) |
 
 ## Files

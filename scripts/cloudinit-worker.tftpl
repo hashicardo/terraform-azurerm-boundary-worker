@@ -42,8 +42,11 @@ sudo apt update && sudo apt install boundary-enterprise=${boundary_version}+ent-
 
 # Directories and permissions
 log "INFO" "Creating Boundary directories and setting permissions"
-sudo mkdir -p /home/boundary/worker1
-sudo chown boundary:boundary /home/boundary && sudo chown boundary:boundary /home/boundary/worker1
+# sudo mkdir -p /home/boundary/worker1
+# sudo mkdir /home/boundary/storage
+# sudo chown boundary:boundary /home/boundary 
+# sudo chown boundary:boundary /home/boundary/worker1
+# sudo chown boundary:boundary /home/boundary/storage
 sudo chown boundary:boundary /usr/bin/boundary
 
 # Create Boundary worker configuration file
@@ -60,10 +63,10 @@ listener "tcp" {
 }
 
 worker {
-    auth_storage_path                            = "/boundary/boundary-worker-${worker_uid}"
+    auth_storage_path                            = "/boundary/worker-${worker_uid}"
     controller_generated_activation_token        = "${worker_activation_token}"
-    # recording_storage_path                       = "/boundary/storage/"
-    # recording_storage_minimum_available_capacity = "100MB"
+    recording_storage_path                       = "/boundary/storage/"
+    recording_storage_minimum_available_capacity = "100MB"
     public_addr                                  = "${vm_ip_address}"
     tags {
         "type"    = ["${worker_type}"]

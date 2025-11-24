@@ -1,4 +1,14 @@
 # Variable Definitions
+# Define what type of worker this is:
+variable "worker_type" {
+    description = "Type of Boundary worker to deploy (ingress or egress)"
+    type        = string
+    default     = "ingress"
+    validation {
+      condition = var.worker_type == "ingress" || var.worker_type == "egress"
+      error_message = "Worker type must be one of 'ingress' or 'egress'"
+    }
+}
 
 variable "region" {
   description = "Azure region where resources will be deployed"
@@ -33,13 +43,13 @@ variable "vnet_name" {
   type        = string
 }
 
-variable "public_subnet_name" {
-  description = "Name of the existing public subnet."
+variable "subnet_name" {
+  description = "Name of the existing subnet."
   type        = string
 }
 
-variable "public_nsg_name" {
-  description = "Name of the existing public network security group."
+variable "nsg_name" {
+  description = "Name of the existing network security group."
   type        = string
 }
 
@@ -57,23 +67,22 @@ variable "admin_username" {
   type        = string
 }
 
-variable "public_vm_name" {
+variable "vm_name" {
   description = "Name of the public VM"
   type        = string
-  default     = "vm-pub"
+  default     = "worker-vm"
 }
 
-variable "public_vm_tags" {
-  description = "Additional tags for public VM"
+variable "vm_tags" {
+  description = "Additional tags for VM"
   type        = map(string)
   default = {
-    Type    = "Ingress"
-    Network = "Public"
+    Purpose = "boundary-worker"
   }
 }
 
 variable "number_of_workers" {
-  description = "Number of Ingress workers to deploy on this network."
+  description = "Number of workers to deploy on this network."
   type        = number
   default     = 1
 }
@@ -81,7 +90,7 @@ variable "number_of_workers" {
 ######################
 #      BOUNDARY      #
 ######################
-variable "boundary_public_url" {
+variable "boundary_addr" {
   description = "Public URL of the Boundary Controller."
   type        = string
 }
