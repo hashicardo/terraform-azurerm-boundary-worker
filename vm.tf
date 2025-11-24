@@ -80,6 +80,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
   lifecycle {
     replace_triggered_by = [boundary_worker.hcp_pki_worker]
+    ignore_changes = [ user_data ]
   }
 
   depends_on = [
