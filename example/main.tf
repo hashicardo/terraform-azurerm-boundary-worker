@@ -36,8 +36,8 @@ provider "boundary" {
   auth_method_password   = var.boundary_password
 }
 
-module "azure_worker_egress" {
-  source            = "../"
+module "azure_worker" {
+  source            = "git::https://github.com/hashicardo/terraform-azurerm-boundary-worker.git"
   number_of_workers = var.number_of_workers
   worker_type       = var.worker_type
 
